@@ -1,0 +1,2602 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Muz Saroyi — Ice Arena</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 20% 10%,#159ddd55,transparent 30%),
+    radial-gradient(circle at 90% 90%,#7d35ff55,transparent 30%),
+    #03152c;
+  color:#fff;
+  overflow-x:hidden;
+}
+
+button{font-family:inherit}
+
+.app{
+  width:min(1200px,100%);
+  margin:auto;
+  padding:15px;
+}
+
+header{
+  text-align:center;
+  padding:15px 0;
+}
+
+header h1{
+  font-size:clamp(30px,6vw,64px);
+  text-shadow:0 0 30px #00c8ff;
+}
+
+header p{opacity:.75;margin-top:5px}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.stat{
+  background:#ffffff12;
+  border:1px solid #ffffff20;
+  border-radius:14px;
+  padding:10px;
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+
+.stat b{
+  display:block;
+  color:#75eaff;
+  font-size:19px;
+  margin-top:3px;
+}
+
+.game-wrap{
+  position:relative;
+}
+
+canvas{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:20px;
+  background:#dff8ff;
+  box-shadow:0 25px 80px #0008;
+  touch-action:none;
+}
+
+.boss{
+  margin-bottom:8px;
+  position:relative;
+  height:24px;
+  background:#24030b;
+  border:2px solid #ff315d;
+  border-radius:30px;
+  overflow:hidden;
+}
+
+.boss-fill{
+  height:100%;
+  width:100%;
+  background:linear-gradient(90deg,#ff1744,#ffb000);
+  transition:.15s;
+}
+
+.boss-title{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  font-weight:bold;
+  text-shadow:0 2px 4px #000;
+}
+
+.menu{
+  display:flex;
+  gap:8px;
+  margin:10px 0;
+  flex-wrap:wrap;
+}
+
+.menu button,
+.control,
+.action{
+  border:0;
+  color:#fff;
+  background:linear-gradient(135deg,#087ee8,#6040e8);
+  border-radius:13px;
+  padding:12px 17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.menu button:hover,
+.action:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.15);
+}
+
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.control{
+  width:65px;
+  height:58px;
+  padding:0;
+  font-size:23px;
+  background:#ffffff18;
+  border:1px solid #ffffff25;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  background:#001027dd;
+  backdrop-filter:blur(12px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+}
+
+.overlay.hide{display:none}
+
+.panel{
+  width:min(900px,100%);
+  max-height:92vh;
+  overflow:auto;
+  background:linear-gradient(145deg,#082b52,#071b38);
+  border:1px solid #ffffff25;
+  border-radius:25px;
+  padding:25px;
+  box-shadow:0 30px 100px #0009;
+}
+
+.panel h2{
+  text-align:center;
+  font-size:32px;
+  margin-bottom:18px;
+}
+
+.shop-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.card{
+  background:#ffffff0d;
+  border:1px solid #ffffff18;
+  border-radius:18px;
+  padding:18px;
+  text-align:center;
+}
+
+.card .icon{
+  font-size:55px;
+  margin-bottom:8px;
+}
+
+.card h3{margin-bottom:6px}
+
+.card p{
+  color:#a9c5dc;
+  font-size:13px;
+  min-height:38px;
+  margin-bottom:10px;
+}
+
+.price{
+  color:#ffd000;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.card.selected{
+  border:2px solid #00d5ff;
+  box-shadow:0 0 25px #00cfff33;
+}
+
+.close{
+  display:block;
+  margin:20px auto 0;
+}
+
+.level-message{
+  text-align:center;
+}
+
+.big{
+  font-size:75px;
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.level-message h2{
+  font-size:40px;
+}
+
+.level-message p{
+  color:#aac4d9;
+  line-height:1.7;
+  margin:15px 0 25px;
+}
+
+@media(max-width:750px){
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .shop-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:450px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .shop-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <h1>❄️ MUZ SAROYI</h1>
+  <p>ICE ARENA — COIN • QUROL • PERSONAJ • BOSS</p>
+</header>
+
+<div class="stats">
+
+  <div class="stat">
+    🪙 COIN
+    <b id="coins">0</b>
+  </div>
+
+  <div class="stat">
+    ⭐ BALL
+    <b id="score">0</b>
+  </div>
+
+  <div class="stat">
+    ❤️ JON
+    <b id="lives">3</b>
+  </div>
+
+  <div class="stat">
+    🔥 LEVEL
+    <b id="level">1</b>
+  </div>
+
+  <div class="stat">
+    🔫 QUROL
+    <b id="weaponName">Oddiy</b>
+  </div>
+
+</div>
+
+<div class="boss">
+
+  <div class="boss-fill" id="bossFill"></div>
+
+  <div class="boss-title">
+    👹 <span id="bossName">Muz Boss</span>
+  </div>
+
+</div>
+
+<div class="game-wrap">
+
+<canvas id="game" width="1100" height="650"></canvas>
+
+</div>
+
+<div class="menu">
+
+  <button onclick="openShop()">🛒 SHOP</button>
+
+  <button onclick="openCharacters()">🧑 PERSONAJLAR</button>
+
+  <button onclick="openWeapons()">🔫 QUROLLAR</button>
+
+  <button onclick="openUpgrades()">⬆️ UPGRADE</button>
+
+  <button onclick="pauseGame()">⏸️ PAUSE</button>
+
+</div>
+
+<div class="controls">
+
+  <button class="control" id="left">⬅️</button>
+  <button class="control" id="up">⬆️</button>
+  <button class="control" id="down">⬇️</button>
+  <button class="control" id="right">➡️</button>
+  <button class="control" id="fire">💥</button>
+
+</div>
+
+</div>
+
+
+<!-- START -->
+
+<div class="overlay" id="start">
+
+<div class="panel level-message">
+
+<div class="big">⛸️</div>
+
+<h2>ICE ARENA</h2>
+
+<p>
+Muz Saroyining eng katta jangiga tayyorlaning!<br><br>
+
+🪙 Coin yig‘ing<br>
+🔫 Kuchli qurollarni oching<br>
+🧑 Personajlarni sotib oling<br>
+⬆️ Kuchingizni oshiring<br>
+👹 Bosslarni mag‘lub qiling
+</p>
+
+<button class="action" onclick="startGame()">
+▶️ O‘YINNI BOSHLASH
+</button>
+
+</div>
+
+</div>
+
+
+<!-- SHOP -->
+
+<div class="overlay hide" id="shop">
+
+<div class="panel">
+
+<h2>🛒 DO‘KON</h2>
+
+<div class="shop-grid">
+
+<div class="card">
+<div class="icon">🪙</div>
+<h3>Coin Bonus</h3>
+<p>Har bir coin olishda qo‘shimcha coin.</p>
+<div class="price">100 🪙</div>
+<button class="action" onclick="buyCoinUpgrade()">
+SOTIB OLISH
+</button>
+</div>
+
+<div class="card">
+<div class="icon">❤️</div>
+<h3>Extra Life</h3>
+<p>Qo‘shimcha jon olish.</p>
+<div class="price">150 🪙</div>
+<button class="action" onclick="buyLife()">
+SOTIB OLISH
+</button>
+</div>
+
+<div class="card">
+<div class="icon">⚡</div>
+<h3>Speed</h3>
+<p>Personaj tezroq harakat qiladi.</p>
+<div class="price">200 🪙</div>
+<button class="action" onclick="buySpeed()">
+SOTIB OLISH
+</button>
+</div>
+
+</div>
+
+<button class="action close" onclick="closeAll()">
+YOPISH
+</button>
+
+</div>
+</div>
+
+
+<!-- CHARACTERS -->
+
+<div class="overlay hide" id="characters">
+
+<div class="panel">
+
+<h2>🧑 PERSONAJLAR</h2>
+
+<div class="shop-grid">
+
+<div class="card" id="char1">
+
+<div class="icon">⛸️</div>
+
+<h3>Ice Kid</h3>
+
+<p>Oddiy boshlang‘ich qahramon.</p>
+
+<div class="price">BEPUL</div>
+
+<button class="action"
+onclick="selectCharacter('ice')">
+TANLASH
+</button>
+
+</div>
+
+
+<div class="card" id="char2">
+
+<div class="icon">🧙</div>
+
+<h3>Ice Wizard</h3>
+
+<p>O‘q kuchi +25%.</p>
+
+<div class="price">500 🪙</div>
+
+<button class="action"
+onclick="buyCharacter('wizard')">
+SOTIB OLISH
+</button>
+
+</div>
+
+
+<div class="card" id="char3">
+
+<div class="icon">🤖</div>
+
+<h3>Ice Robot</h3>
+
+<p>HP +2 va himoya kuchli.</p>
+
+<div class="price">800 🪙</div>
+
+<button class="action"
+onclick="buyCharacter('robot')">
+SOTIB OLISH
+</button>
+
+</div>
+
+
+<div class="card" id="char4">
+
+<div class="icon">👑</div>
+
+<h3>Ice King</h3>
+
+<p>Tezlik va qurol kuchi yuqori.</p>
+
+<div class="price">1500 🪙</div>
+
+<button class="action"
+onclick="buyCharacter('king')">
+SOTIB OLISH
+</button>
+
+</div>
+
+</div>
+
+<button class="action close" onclick="closeAll()">
+YOPISH
+</button>
+
+</div>
+</div>
+
+
+<!-- WEAPONS -->
+
+<div class="overlay hide" id="weapons">
+
+<div class="panel">
+
+<h2>🔫 QUROLLAR</h2>
+
+<div class="shop-grid">
+
+<div class="card">
+<div class="icon">❄️</div>
+<h3>Ice Blaster</h3>
+<p>Oddiy muz o‘qi.</p>
+<div class="price">BEPUL</div>
+<button class="action"
+onclick="selectWeapon('ice')">
+TANLASH
+</button>
+</div>
+
+<div class="card">
+<div class="icon">🔫</div>
+<h3>Laser</h3>
+<p>Kuchli va tez o‘q.</p>
+<div class="price">600 🪙</div>
+<button class="action"
+onclick="buyWeapon('laser')">
+SOTIB OLISH
+</button>
+</div>
+
+<div class="card">
+<div class="icon">💥</div>
+<h3>Rocket</h3>
+<p>Katta portlash zarari.</p>
+<div class="price">1000 🪙</div>
+<button class="action"
+onclick="buyWeapon('rocket')">
+SOTIB OLISH
+</button>
+</div>
+
+<div class="card">
+<div class="icon">⚡</div>
+<h3>Thunder</h3>
+<p>Eng kuchli qurol.</p>
+<div class="price">2000 🪙</div>
+<button class="action"
+onclick="buyWeapon('thunder')">
+SOTIB OLISH
+</button>
+</div>
+
+</div>
+
+<button class="action close" onclick="closeAll()">
+YOPISH
+</button>
+
+</div>
+</div>
+
+
+<!-- UPGRADES -->
+
+<div class="overlay hide" id="upgrades">
+
+<div class="panel">
+
+<h2>⬆️ UPGRADE</h2>
+
+<div class="shop-grid">
+
+<div class="card">
+
+<div class="icon">❤️</div>
+
+<h3>HP</h3>
+
+<p>Qo‘shimcha maksimal jon.</p>
+
+<div class="price">300 🪙</div>
+
+<button class="action"
+onclick="upgradeHP()">
+UPGRADE
+</button>
+
+</div>
+
+
+<div class="card">
+
+<div class="icon">💥</div>
+
+<h3>Damage</h3>
+
+<p>Qurol zarari oshadi.</p>
+
+<div class="price">350 🪙</div>
+
+<button class="action"
+onclick="upgradeDamage()">
+UPGRADE
+</button>
+
+</div>
+
+
+<div class="card">
+
+<div class="icon">🏃</div>
+
+<h3>Speed</h3>
+
+<p>Harakat tezligi oshadi.</p>
+
+<div class="price">250 🪙</div>
+
+<button class="action"
+onclick="upgradeSpeed()">
+UPGRADE
+</button>
+
+</div>
+
+</div>
+
+<button class="action close" onclick="closeAll()">
+YOPISH
+</button>
+
+</div>
+</div>
+
+
+<!-- LEVEL WIN -->
+
+<div class="overlay hide" id="levelWin">
+
+<div class="panel level-message">
+
+<div class="big">👑</div>
+
+<h2>BOSS MAG‘LUB BO‘LDI!</h2>
+
+<p id="winText"></p>
+
+<button class="action"
+onclick="nextLevel()">
+🔥 KEYINGI LEVEL
+</button>
+
+</div>
+
+</div>
+
+
+<!-- GAME OVER -->
+
+<div class="overlay hide" id="gameOver">
+
+<div class="panel level-message">
+
+<div class="big">💀</div>
+
+<h2>O‘YIN TUGADI</h2>
+
+<p>
+Sizning barcha jonlaringiz tugadi.
+</p>
+
+<h2 id="finalScore">0</h2>
+
+<button class="action"
+onclick="restartGame()">
+🔄 QAYTA O‘YNASH
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   SAVE DATA
+========================= */
+
+const defaultSave={
+
+coins:0,
+
+score:0,
+
+level:1,
+
+character:"ice",
+
+weapons:{
+ice:true,
+laser:false,
+rocket:false,
+thunder:false
+},
+
+characters:{
+ice:true,
+wizard:false,
+robot:false,
+king:false
+},
+
+coinBonus:0,
+
+maxLives:3,
+
+damage:1,
+
+speed:1
+
+};
+
+let save=
+JSON.parse(
+localStorage.getItem("iceArenaSave")
+||
+JSON.stringify(defaultSave)
+);
+
+
+/* =========================
+   GAME
+========================= */
+
+const canvas=
+document.getElementById("game");
+
+const ctx=
+canvas.getContext("2d");
+
+let player;
+
+let boss;
+
+let coins=[];
+
+let bullets=[];
+
+let enemyBullets=[];
+
+let obstacles=[];
+
+let particles=[];
+
+let keys={};
+
+let running=false;
+
+let paused=false;
+
+let lives=save.maxLives;
+
+let fireCooldown=0;
+
+let invincible=0;
+
+let bossTimer=0;
+
+
+/* =========================
+   DATA
+========================= */
+
+const characters={
+
+ice:{
+icon:"⛸️",
+damage:1,
+speed:1,
+hp:0
+},
+
+wizard:{
+icon:"🧙",
+damage:1.25,
+speed:1,
+hp:0
+},
+
+robot:{
+icon:"🤖",
+damage:1,
+speed:.9,
+hp:2
+},
+
+king:{
+icon:"👑",
+damage:1.5,
+speed:1.15,
+hp:1
+}
+
+};
+
+
+const weapons={
+
+ice:{
+name:"Ice",
+damage:10,
+speed:9,
+cooldown:16,
+size:6,
+color:"#00cfff"
+},
+
+laser:{
+name:"Laser",
+damage:22,
+speed:13,
+cooldown:10,
+size:5,
+color:"#ff2df7"
+},
+
+rocket:{
+name:"Rocket",
+damage:40,
+speed:7,
+cooldown:28,
+size:11,
+color:"#ff7900"
+},
+
+thunder:{
+name:"Thunder",
+damage:65,
+speed:16,
+cooldown:20,
+size:8,
+color:"#ffe000"
+}
+
+};
+
+
+const bossNames=[
+"Muz Boss",
+"Qor Dev",
+"Frost King",
+"Glacier Monster",
+"Ice Dragon",
+"Ultimate Ice Lord"
+];
+
+
+/* =========================
+   SAVE
+========================= */
+
+function saveGame(){
+
+localStorage.setItem(
+"iceArenaSave",
+JSON.stringify(save)
+);
+
+}
+
+
+/* =========================
+   UI
+========================= */
+
+function updateUI(){
+
+document.getElementById("coins")
+.textContent=save.coins;
+
+document.getElementById("score")
+.textContent=save.score;
+
+document.getElementById("lives")
+.textContent=lives;
+
+document.getElementById("level")
+.textContent=save.level;
+
+document.getElementById("weaponName")
+.textContent=
+weapons[
+currentWeapon()
+].name;
+
+}
+
+
+/* =========================
+   CURRENT
+========================= */
+
+function currentWeapon(){
+
+for(const w in save.weapons){
+
+if(save.weapons[w] &&
+w===selectedWeapon){
+
+return w;
+
+}
+
+}
+
+return selectedWeapon || "ice";
+
+}
+
+
+let selectedWeapon="ice";
+
+
+/* =========================
+   START
+========================= */
+
+function startGame(){
+
+document
+.getElementById("start")
+.classList.add("hide");
+
+save.level=1;
+
+lives=save.maxLives;
+
+save.score=0;
+
+saveGame();
+
+newLevel();
+
+running=true;
+
+paused=false;
+
+requestAnimationFrame(loop);
+
+}
+
+
+/* =========================
+   LEVEL
+========================= */
+
+function newLevel(){
+
+const lv=save.level;
+
+player={
+
+x:550,
+
+y:540,
+
+size:23,
+
+speed:
+5.5+
+save.speed*.5
+
+};
+
+
+boss={
+
+x:550,
+
+y:100,
+
+size:
+45+
+lv*2,
+
+health:
+150+
+lv*80,
+
+maxHealth:
+150+
+lv*80,
+
+speed:
+1+
+lv*.15
+
+};
+
+
+coins=[];
+
+bullets=[];
+
+enemyBullets=[];
+
+obstacles=[];
+
+particles=[];
+
+bossTimer=0;
+
+
+/* COINS */
+
+for(
+let i=0;
+i<7+lv*2;
+i++
+){
+
+spawnCoin();
+
+}
+
+
+/* OBSTACLES */
+
+for(
+let i=0;
+i<lv+3;
+i++
+){
+
+obstacles.push({
+
+x:Math.random()*950+75,
+
+y:180+Math.random()*330,
+
+size:20+Math.random()*15,
+
+speed:
+.5+lv*.1
+
+});
+
+}
+
+
+updateUI();
+
+}
+
+
+/* =========================
+   COIN
+========================= */
+
+function spawnCoin(){
+
+coins.push({
+
+x:
+Math.random()*950+75,
+
+y:
+180+Math.random()*320,
+
+size:13,
+
+spin:0
+
+});
+
+}
+
+
+/* =========================
+   INPUT
+========================= */
+
+window.addEventListener(
+"keydown",
+e=>{
+
+keys[e.key.toLowerCase()]=true;
+
+if(e.code==="Space")
+shoot();
+
+if(e.key==="Escape")
+pauseGame();
+
+});
+
+
+window.addEventListener(
+"keyup",
+e=>{
+
+keys[e.key.toLowerCase()]=false;
+
+});
+
+
+function control(id,key){
+
+const el=
+document.getElementById(id);
+
+el.addEventListener(
+"pointerdown",
+()=>{
+keys[key]=true;
+});
+
+el.addEventListener(
+"pointerup",
+()=>{
+keys[key]=false;
+});
+
+el.addEventListener(
+"pointerleave",
+()=>{
+keys[key]=false;
+});
+
+}
+
+
+control("left","arrowleft");
+control("right","arrowright");
+control("up","arrowup");
+control("down","arrowdown");
+
+
+document
+.getElementById("fire")
+.addEventListener(
+"pointerdown",
+shoot
+);
+
+
+/* =========================
+   MOVE
+========================= */
+
+function movePlayer(){
+
+if(keys["arrowleft"]||keys["a"])
+player.x-=player.speed;
+
+if(keys["arrowright"]||keys["d"])
+player.x+=player.speed;
+
+if(keys["arrowup"]||keys["w"])
+player.y-=player.speed;
+
+if(keys["arrowdown"]||keys["s"])
+player.y+=player.speed;
+
+
+player.x=Math.max(
+25,
+Math.min(
+canvas.width-25,
+player.x
+)
+);
+
+player.y=Math.max(
+150,
+Math.min(
+canvas.height-25,
+player.y
+)
+);
+
+}
+
+
+/* =========================
+   SHOOT
+========================= */
+
+function shoot(){
+
+if(!running||paused)return;
+
+if(fireCooldown>0)return;
+
+const w=
+weapons[currentWeapon()];
+
+const char=
+characters[save.character];
+
+bullets.push({
+
+x:player.x,
+
+y:player.y-25,
+
+speed:w.speed,
+
+size:w.size,
+
+damage:
+w.damage*
+save.damage*
+char.damage,
+
+color:w.color
+
+});
+
+fireCooldown=w.cooldown;
+
+}
+
+
+/* =========================
+   BOSS MOVE
+========================= */
+
+function moveBoss(){
+
+let dx=
+player.x-boss.x;
+
+let dy=
+player.y-boss.y;
+
+let d=
+Math.hypot(dx,dy);
+
+if(d>170){
+
+boss.x+=
+dx/d*boss.speed;
+
+boss.y+=
+dy/d*boss.speed;
+
+}
+
+boss.x=Math.max(
+60,
+Math.min(
+canvas.width-60,
+boss.x
+)
+);
+
+boss.y=Math.max(
+60,
+Math.min(
+240,
+boss.y
+)
+);
+
+}
+
+
+/* =========================
+   BOSS SHOOT
+========================= */
+
+function bossAttack(){
+
+bossTimer++;
+
+const delay=
+Math.max(
+30,
+90-save.level*5
+);
+
+if(bossTimer<delay)return;
+
+bossTimer=0;
+
+const dx=
+player.x-boss.x;
+
+const dy=
+player.y-boss.y;
+
+const d=
+Math.hypot(dx,dy);
+
+const speed=
+4+save.level*.35;
+
+enemyBullets.push({
+
+x:boss.x,
+
+y:boss.y,
+
+vx:dx/d*speed,
+
+vy:dy/d*speed,
+
+size:8
+
+});
+
+
+if(save.level>=3){
+
+for(let i=-1;i<=1;i++){
+
+enemyBullets.push({
+
+x:boss.x,
+
+y:boss.y,
+
+vx:
+Math.cos(
+Math.atan2(dy,dx)+i*.22
+)*speed,
+
+vy:
+Math.sin(
+Math.atan2(dy,dx)+i*.22
+)*speed,
+
+size:7
+
+});
+
+}
+
+}
+
+}
+
+
+/* =========================
+   COLLISION
+========================= */
+
+function hit(a,b){
+
+return Math.hypot(
+a.x-b.x,
+a.y-b.y
+)
+<
+a.size+b.size;
+
+}
+
+
+/* =========================
+   BULLETS
+========================= */
+
+function updateBullets(){
+
+for(
+let i=bullets.length-1;
+i>=0;
+i--
+){
+
+const b=bullets[i];
+
+b.y-=b.speed;
+
+if(hit(b,boss)){
+
+boss.health-=b.damage;
+
+scoreAdd(3);
+
+explode(
+boss.x,
+boss.y,
+b.color
+);
+
+bullets.splice(i,1);
+
+continue;
+
+}
+
+if(b.y<0)
+bullets.splice(i,1);
+
+}
+
+}
+
+
+/* =========================
+   ENEMY BULLETS
+========================= */
+
+function updateEnemyBullets(){
+
+for(
+let i=enemyBullets.length-1;
+i>=0;
+i--
+){
+
+const b=enemyBullets[i];
+
+b.x+=b.vx;
+b.y+=b.vy;
+
+if(hit(b,player)){
+
+damagePlayer();
+
+enemyBullets.splice(i,1);
+
+continue;
+
+}
+
+if(
+b.x<0||
+b.x>canvas.width||
+b.y<0||
+b.y>canvas.height
+){
+
+enemyBullets.splice(i,1);
+
+}
+
+}
+
+}
+
+
+/* =========================
+   PLAYER DAMAGE
+========================= */
+
+function damagePlayer(){
+
+if(invincible>0)return;
+
+lives--;
+
+invincible=80;
+
+explode(
+player.x,
+player.y,
+"#00cfff"
+);
+
+updateUI();
+
+if(lives<=0)
+gameOver();
+
+}
+
+
+/* =========================
+   COINS
+========================= */
+
+function updateCoins(){
+
+for(
+let i=coins.length-1;
+i>=0;
+i--
+){
+
+const c=coins[i];
+
+c.spin+=.1;
+
+if(hit(player,c)){
+
+let amount=
+1+save.coinBonus;
+
+save.coins+=amount;
+
+save.score+=5;
+
+coins.splice(i,1);
+
+spawnCoin();
+
+explode(
+c.x,
+c.y,
+"#ffd000"
+);
+
+updateUI();
+
+saveGame();
+
+}
+
+}
+
+}
+
+
+/* =========================
+   OBSTACLES
+========================= */
+
+function updateObstacles(){
+
+obstacles.forEach(o=>{
+
+o.y+=o.speed;
+
+if(
+o.y>
+canvas.height+50
+){
+
+o.y=140;
+
+o.x=
+Math.random()*950+75;
+
+}
+
+if(hit(player,o)){
+
+damagePlayer();
+
+o.y=140;
+
+}
+
+});
+
+}
+
+
+/* =========================
+   SCORE
+========================= */
+
+function scoreAdd(n){
+
+save.score+=n;
+
+}
+
+
+/* =========================
+   EXPLOSION
+========================= */
+
+function explode(x,y,color){
+
+for(let i=0;i<12;i++){
+
+particles.push({
+
+x,y,
+
+vx:(Math.random()-.5)*7,
+
+vy:(Math.random()-.5)*7,
+
+life:35,
+
+color
+
+});
+
+}
+
+}
+
+
+function updateParticles(){
+
+particles.forEach(p=>{
+
+p.x+=p.vx;
+
+p.y+=p.vy;
+
+p.life--;
+
+});
+
+particles=
+particles.filter(
+p=>p.life>0
+);
+
+}
+
+
+/* =========================
+   DRAW BACKGROUND
+========================= */
+
+function drawBackground(){
+
+const g=
+ctx.createLinearGradient(
+0,0,
+canvas.width,
+canvas.height
+);
+
+g.addColorStop(
+0,
+"#f7ffff"
+);
+
+g.addColorStop(
+1,
+"#9ee7ff"
+);
+
+ctx.fillStyle=g;
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+/* ice lines */
+
+ctx.strokeStyle=
+"#168ac522";
+
+for(
+let x=0;
+x<canvas.width;
+x+=70
+){
+
+ctx.beginPath();
+
+ctx.moveTo(x,0);
+
+ctx.lineTo(x,canvas.height);
+
+ctx.stroke();
+
+}
+
+for(
+let y=0;
+y<canvas.height;
+y+=70
+){
+
+ctx.beginPath();
+
+ctx.moveTo(0,y);
+
+ctx.lineTo(canvas.width,y);
+
+ctx.stroke();
+
+}
+
+
+/* rink */
+
+ctx.beginPath();
+
+ctx.arc(
+550,
+380,
+190,
+0,
+Math.PI*2
+);
+
+ctx.strokeStyle="#087fc422";
+
+ctx.lineWidth=4;
+
+ctx.stroke();
+
+}
+
+
+/* =========================
+   DRAW PLAYER
+========================= */
+
+function drawPlayer(){
+
+ctx.save();
+
+ctx.translate(
+player.x,
+player.y
+);
+
+if(invincible%10<5){
+
+const icon=
+characters[
+save.character
+].icon;
+
+ctx.font="48px Arial";
+
+ctx.textAlign="center";
+
+ctx.textBaseline="middle";
+
+ctx.shadowColor="#00bfff";
+
+ctx.shadowBlur=20;
+
+ctx.fillText(
+icon,
+0,
+0
+);
+
+}
+
+ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW BOSS
+========================= */
+
+function drawBoss(){
+
+ctx.save();
+
+ctx.translate(
+boss.x,
+boss.y
+);
+
+ctx.shadowColor="#ff1744";
+
+ctx.shadowBlur=30;
+
+ctx.fillStyle="#9e0030";
+
+ctx.beginPath();
+
+ctx.arc(
+0,
+0,
+boss.size,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+ctx.shadowBlur=0;
+
+
+/* horns */
+
+ctx.fillStyle="#ff315c";
+
+ctx.beginPath();
+
+ctx.moveTo(-25,-30);
+
+ctx.lineTo(-55,-65);
+
+ctx.lineTo(-10,-42);
+
+ctx.fill();
+
+ctx.beginPath();
+
+ctx.moveTo(25,-30);
+
+ctx.lineTo(55,-65);
+
+ctx.lineTo(10,-42);
+
+ctx.fill();
+
+
+/* eyes */
+
+ctx.fillStyle="#fff";
+
+ctx.beginPath();
+
+ctx.arc(
+-17,
+-8,
+9,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+ctx.beginPath();
+
+ctx.arc(
+17,
+-8,
+9,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+
+ctx.fillStyle="#ff1744";
+
+ctx.beginPath();
+
+ctx.arc(
+-17,
+-8,
+4,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+ctx.beginPath();
+
+ctx.arc(
+17,
+-8,
+4,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+
+ctx.fillStyle="#fff";
+
+ctx.font="bold 15px Arial";
+
+ctx.textAlign="center";
+
+ctx.fillText(
+"LV "+save.level,
+0,
+boss.size+25
+);
+
+ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW COINS
+========================= */
+
+function drawCoins(){
+
+coins.forEach(c=>{
+
+ctx.save();
+
+ctx.translate(c.x,c.y);
+
+ctx.rotate(Math.sin(c.spin)*.4);
+
+ctx.shadowColor="#ffd000";
+
+ctx.shadowBlur=20;
+
+ctx.fillStyle="#ffd000";
+
+ctx.beginPath();
+
+ctx.arc(
+0,
+0,
+c.size,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+ctx.shadowBlur=0;
+
+ctx.fillStyle="#fff4a0";
+
+ctx.font="bold 14px Arial";
+
+ctx.textAlign="center";
+
+ctx.textBaseline="middle";
+
+ctx.fillText(
+"$",
+0,
+1
+);
+
+ctx.restore();
+
+});
+
+}
+
+
+/* =========================
+   DRAW OBSTACLES
+========================= */
+
+function drawObstacles(){
+
+obstacles.forEach(o=>{
+
+ctx.fillStyle="#70dcff";
+
+ctx.shadowColor="#00aaff";
+
+ctx.shadowBlur=12;
+
+ctx.beginPath();
+
+ctx.moveTo(
+o.x,
+o.y-o.size
+);
+
+ctx.lineTo(
+o.x+o.size,
+o.y+o.size
+);
+
+ctx.lineTo(
+o.x-o.size,
+o.y+o.size
+);
+
+ctx.closePath();
+
+ctx.fill();
+
+});
+
+ctx.shadowBlur=0;
+
+}
+
+
+/* =========================
+   DRAW BULLETS
+========================= */
+
+function drawBullets(){
+
+bullets.forEach(b=>{
+
+ctx.fillStyle=b.color;
+
+ctx.shadowColor=b.color;
+
+ctx.shadowBlur=20;
+
+ctx.beginPath();
+
+ctx.arc(
+b.x,
+b.y,
+b.size,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+});
+
+
+enemyBullets.forEach(b=>{
+
+ctx.fillStyle="#ff315c";
+
+ctx.shadowColor="#ff315c";
+
+ctx.shadowBlur=15;
+
+ctx.beginPath();
+
+ctx.arc(
+b.x,
+b.y,
+b.size,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+});
+
+ctx.shadowBlur=0;
+
+}
+
+
+/* =========================
+   DRAW PARTICLES
+========================= */
+
+function drawParticles(){
+
+particles.forEach(p=>{
+
+ctx.globalAlpha=
+p.life/35;
+
+ctx.fillStyle=p.color;
+
+ctx.beginPath();
+
+ctx.arc(
+p.x,
+p.y,
+4,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+});
+
+ctx.globalAlpha=1;
+
+}
+
+
+/* =========================
+   LOOP
+========================= */
+
+function loop(){
+
+if(!running)return;
+
+if(!paused){
+
+movePlayer();
+
+moveBoss();
+
+bossAttack();
+
+updateBullets();
+
+updateEnemyBullets();
+
+updateCoins();
+
+updateObstacles();
+
+updateParticles();
+
+if(fireCooldown>0)
+fireCooldown--;
+
+if(invincible>0)
+invincible--;
+
+
+drawBackground();
+
+drawObstacles();
+
+drawCoins();
+
+drawBullets();
+
+drawBoss();
+
+drawPlayer();
+
+drawParticles();
+
+
+const hp=
+Math.max(
+0,
+boss.health/
+boss.maxHealth*100
+);
+
+document
+.getElementById("bossFill")
+.style.width=
+hp+"%";
+
+document
+.getElementById("bossName")
+.textContent=
+bossNames[
+Math.min(
+save.level-1,
+bossNames.length-1
+)
+];
+
+
+if(boss.health<=0){
+
+bossWin();
+
+return;
+
+}
+
+}
+
+requestAnimationFrame(loop);
+
+}
+
+
+/* =========================
+   BOSS WIN
+========================= */
+
+function bossWin(){
+
+running=false;
+
+const reward=
+100+
+save.level*75;
+
+save.coins+=reward;
+
+save.score+=
+200*save.level;
+
+saveGame();
+
+document
+.getElementById("winText")
+.innerHTML=
+`👑 Boss mag‘lub bo‘ldi!<br><br>
+🪙 Mukofot: <b>${reward} coin</b><br>
+⭐ Bonus: <b>${200*save.level} ball</b>`;
+
+document
+.getElementById("levelWin")
+.classList.remove("hide");
+
+updateUI();
+
+}
+
+
+/* =========================
+   NEXT LEVEL
+========================= */
+
+function nextLevel(){
+
+save.level++;
+
+lives=
+save.maxLives;
+
+document
+.getElementById("levelWin")
+.classList.add("hide");
+
+newLevel();
+
+running=true;
+
+requestAnimationFrame(loop);
+
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function gameOver(){
+
+running=false;
+
+saveGame();
+
+document
+.getElementById("finalScore")
+.textContent=
+save.score;
+
+document
+.getElementById("gameOver")
+.classList.remove("hide");
+
+}
+
+
+function restartGame(){
+
+document
+.getElementById("gameOver")
+.classList.add("hide");
+
+save.score=0;
+
+lives=save.maxLives;
+
+newLevel();
+
+running=true;
+
+requestAnimationFrame(loop);
+
+}
+
+
+/* =========================
+   PAUSE
+========================= */
+
+function pauseGame(){
+
+if(!running)return;
+
+paused=!paused;
+
+}
+
+
+/* =========================
+   WINDOWS
+========================= */
+
+function closeAll(){
+
+document
+.querySelectorAll(".overlay")
+.forEach(x=>{
+
+if(
+x.id!=="start" &&
+x.id!=="gameOver" &&
+x.id!=="levelWin"
+){
+
+x.classList.add("hide");
+
+}
+
+});
+
+}
+
+
+function openShop(){
+
+pauseGame();
+
+document
+.getElementById("shop")
+.classList.remove("hide");
+
+}
+
+function openCharacters(){
+
+pauseGame();
+
+document
+.getElementById("characters")
+.classList.remove("hide");
+
+}
+
+function openWeapons(){
+
+pauseGame();
+
+document
+.getElementById("weapons")
+.classList.remove("hide");
+
+}
+
+function openUpgrades(){
+
+pauseGame();
+
+document
+.getElementById("upgrades")
+.classList.remove("hide");
+
+}
+
+
+/* =========================
+   PURCHASE
+========================= */
+
+function spend(amount){
+
+if(save.coins<amount){
+
+alert("🪙 Coin yetarli emas!");
+
+return false;
+
+}
+
+save.coins-=amount;
+
+saveGame();
+
+updateUI();
+
+return true;
+
+}
+
+
+/* COIN BONUS */
+
+function buyCoinUpgrade(){
+
+if(spend(100)){
+
+save.coinBonus++;
+
+alert(
+"🪙 Coin bonusi oshdi!"
+);
+
+saveGame();
+
+}
+
+}
+
+
+/* LIFE */
+
+function buyLife(){
+
+if(spend(150)){
+
+save.maxLives++;
+
+lives++;
+
+updateUI();
+
+saveGame();
+
+}
+
+}
+
+
+/* SPEED */
+
+function buySpeed(){
+
+if(spend(200)){
+
+save.speed+=.4;
+
+alert(
+"⚡ Tezlik oshdi!"
+);
+
+saveGame();
+
+}
+
+}
+
+
+/* CHARACTER */
+
+function selectCharacter(id){
+
+if(!save.characters[id])return;
+
+save.character=id;
+
+saveGame();
+
+alert(
+"🧑 Personaj tanlandi!"
+);
+
+updateUI();
+
+}
+
+
+function buyCharacter(id){
+
+const prices={
+
+wizard:500,
+
+robot:800,
+
+king:1500
+
+};
+
+if(save.characters[id]){
+
+selectCharacter(id);
+
+return;
+
+}
+
+if(
+spend(prices[id])
+){
+
+save.characters[id]=true;
+
+save.character=id;
+
+saveGame();
+
+alert(
+"🎉 Yangi personaj ochildi!"
+);
+
+}
+
+}
+
+
+/* =========================
+   WEAPONS
+========================= */
+
+function selectWeapon(id){
+
+if(!save.weapons[id])return;
+
+selectedWeapon=id;
+
+saveGame();
+
+updateUI();
+
+alert(
+"🔫 Qurol tanlandi!"
+);
+
+}
+
+
+function buyWeapon(id){
+
+const prices={
+
+laser:600,
+
+rocket:1000,
+
+thunder:2000
+
+};
+
+if(save.weapons[id]){
+
+selectWeapon(id);
+
+return;
+
+}
+
+if(
+spend(prices[id])
+){
+
+save.weapons[id]=true;
+
+selectedWeapon=id;
+
+saveGame();
+
+alert(
+"🔥 Yangi qurol ochildi!"
+);
+
+updateUI();
+
+}
+
+}
+
+
+/* =========================
+   UPGRADES
+========================= */
+
+function upgradeHP(){
+
+if(spend(300)){
+
+save.maxLives++;
+
+lives++;
+
+saveGame();
+
+updateUI();
+
+}
+
+}
+
+
+function upgradeDamage(){
+
+if(spend(350)){
+
+save.damage+=.25;
+
+saveGame();
+
+alert(
+"💥 Damage oshdi!"
+);
+
+}
+
+}
+
+
+function upgradeSpeed(){
+
+if(spend(250)){
+
+save.speed+=.3;
+
+saveGame();
+
+alert(
+"🏃 Speed oshdi!"
+);
+
+}
+
+}
+
+
+/* =========================
+   INIT
+========================= */
+
+updateUI();
+
+</script>
+
+</body>
+</html>
